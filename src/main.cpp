@@ -10,6 +10,7 @@
 #include "motion.h"
 #include "system_state.h"
 
+#ifndef PIO_UNIT_TESTING
 extern "C" void app_main(void) {
     // 1. Hardware & RTOS Object Creation (Section 41)
     init_rtos_objects();
@@ -48,3 +49,4 @@ extern "C" void app_main(void) {
     // 4. Scheduler-driven operation: app_main task deletes itself
     vTaskDelete(NULL);
 }
+#endif
