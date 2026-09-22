@@ -8,7 +8,8 @@
     { "type": "wokwi-photoresistor-sensor", "id": "ldr1", "top": 100, "left": 150, "attrs": {} },
     { "type": "wokwi-ssd1306", "id": "oled1", "top": 200, "left": 150, "attrs": {} },
     { "type": "wokwi-ky-040", "id": "encoder1", "top": 300, "left": 150, "attrs": {} },
-    { "type": "wokwi-buzzer", "id": "bz1", "top": 400, "left": 150, "attrs": {} }
+    { "type": "wokwi-buzzer", "id": "bz1", "top": 400, "left": 150, "attrs": {} },
+    { "type": "wokwi-pir-motion-sensor", "id": "pir1", "top": -100, "left": 150, "attrs": {} }
   ],
   "connections": [
     [ "esp:TX", "$serialMonitor:RX", "", [] ],
@@ -29,7 +30,10 @@
     [ "esp:3V3", "encoder1:VCC", "", [] ],
     [ "esp:GND", "encoder1:GND", "", [] ],
     [ "esp:25", "bz1:1", "", [] ],
-    [ "esp:GND", "bz1:2", "", [] ]
+    [ "esp:GND", "bz1:2", "", [] ],
+    [ "esp:27", "pir1:OUT", "", [] ],
+    [ "esp:3V3", "pir1:VCC", "", [] ],
+    [ "esp:GND", "pir1:GND", "", [] ]
   ],
   "dependencies": {}
 }

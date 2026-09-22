@@ -5,6 +5,7 @@
 #include "display.h"
 #include "input.h"
 #include "alarm.h"
+#include "motion.h"
 #include "rtos_objects.h"
 
 extern "C" void app_main(void) {
@@ -15,6 +16,8 @@ extern "C" void app_main(void) {
     init_rtos_objects();
 
     if (sensorQueue != NULL && navQueue != NULL && alarmQueue != NULL) {
+        // MotionTask (Priority 3)
+        xTaskCreate(MotionTask, "MotionTask", 2048, NULL, 3, NULL);
         // InputTask (Priority 3)
         xTaskCreate(InputTask, "InputTask", 2048, NULL, 3, NULL);
         // SensorTask (Priority 2)
