@@ -145,6 +145,15 @@ void SensorTask(void *pvParameters) {
             xQueueSend(alarmQueue, &currentData, 0);
         }
 
+        if (serialMutex != NULL && xSemaphoreTake(serialMutex, pdMS_TO_TICKS(50)) == pdTRUE) {
+            printf("[SENSOR] Periodic Sample -> Temp: %.1f C | Hum: %.1f %% | Light: %d %% | Motion: %s\n",
+                   currentData.temperature,
+                   currentData.humidity,
+                   currentData.lightLevel,
+                   currentData.motionDetected ? "YES" : "NO");
+            xSemaphoreGive(serialMutex);
+        }
+
         // Section 22: Mandatory periodic execution using vTaskDelayUntil
         vTaskDelayUntil(&lastWakeTime, pdMS_TO_TICKS(2000));
     }

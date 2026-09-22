@@ -59,6 +59,12 @@ void InputTask(void *pvParameters) {
 
             if (navQueue != NULL && event != NavigationEvent::NONE) {
                 xQueueSend(navQueue, &event, 0);
+
+                if (serialMutex != NULL && xSemaphoreTake(serialMutex, pdMS_TO_TICKS(50)) == pdTRUE) {
+                    printf("[INPUT] Encoder: %s\n",
+                           event == NavigationEvent::NEXT ? "Clockwise (Next Page)" : "Counterclockwise (Prev Page)");
+                    xSemaphoreGive(serialMutex);
+                }
             }
         }
 
