@@ -6,7 +6,8 @@
     { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
     { "type": "wokwi-dht22", "id": "dht1", "top": 0, "left": 150, "attrs": {} },
     { "type": "wokwi-photoresistor-sensor", "id": "ldr1", "top": 100, "left": 150, "attrs": {} },
-    { "type": "wokwi-ssd1306", "id": "oled1", "top": 200, "left": 150, "attrs": {} }
+    { "type": "wokwi-ssd1306", "id": "oled1", "top": 200, "left": 150, "attrs": {} },
+    { "type": "wokwi-ky-040", "id": "encoder1", "top": 300, "left": 150, "attrs": {} }
   ],
   "connections": [
     [ "esp:TX", "$serialMonitor:RX", "", [] ],
@@ -20,7 +21,12 @@
     [ "esp:21", "oled1:SDA", "", [] ],
     [ "esp:22", "oled1:SCL", "", [] ],
     [ "esp:3V3", "oled1:VCC", "", [] ],
-    [ "esp:GND", "oled1:GND", "", [] ]
+    [ "esp:GND", "oled1:GND", "", [] ],
+    [ "esp:18", "encoder1:CLK", "", [] ],
+    [ "esp:19", "encoder1:DT", "", [] ],
+    [ "esp:5", "encoder1:SW", "", [] ],
+    [ "esp:3V3", "encoder1:VCC", "", [] ],
+    [ "esp:GND", "encoder1:GND", "", [] ]
   ],
   "dependencies": {}
 }

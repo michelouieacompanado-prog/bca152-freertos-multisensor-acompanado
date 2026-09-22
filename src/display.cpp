@@ -6,6 +6,7 @@
 #include "driver/i2c.h"
 
 #include "display.h"
+#include "input.h"
 #include "rtos_objects.h"
 
 #define SSD1306_WIDTH  128
@@ -14,7 +15,6 @@
 
 static uint8_t s_framebuffer[SSD1306_BUFFER_SIZE];
 
-// Compact 5x7 font (expanded to 6 bytes per char including 1px spacing) for standard ASCII 32 to 90
 static const uint8_t font5x7[][5] = {
     {0x00, 0x00, 0x00, 0x00, 0x00}, // 32 ' '
     {0x00, 0x00, 0x5F, 0x00, 0x00}, // 33 '!'
@@ -126,7 +126,7 @@ static void ssd1306_send_cmd(uint8_t cmd) {
     i2c_cmd_handle_t handle = i2c_cmd_link_create();
     i2c_master_start(handle);
     i2c_master_write_byte(handle, (SSD1306_I2C_ADDR << 1) | I2C_MASTER_WRITE, true);
-    i2c_master_write_byte(handle, 0x00, true); // Control byte: Command
+    i2c_master_write_byte(handle, 0x00, true);
     i2c_master_write_byte(handle, cmd, true);
     i2c_master_stop(handle);
     i2c_master_cmd_begin(I2C_MASTER_NUM, handle, pdMS_TO_TICKS(100));
@@ -138,22 +138,9 @@ void ssd1306_init(void) {
     vTaskDelay(pdMS_TO_TICKS(100));
 
     static const uint8_t init_cmds[] = {
-        0xAE,       // Display OFF
-        0xD5, 0x80, // Set display clock divide ratio
-        0xA8, 0x3F, // Multiplex ratio: 64
-        0xD3, 0x00, // Display offset: 0
-        0x40,       // Start line: 0
-        0x8D, 0x14, // Charge pump: Enable
-        0x20, 0x00, // Memory addressing mode: Horizontal
-        0xA1,       // Segment re-map: Col 127 mapped to SEG0
-        0xC8,       // COM output scan direction: remapped
-        0xDA, 0x12, // COM pins hardware configuration
-        0x81, 0xCF, // Contrast control
-        0xD9, 0xF1, // Pre-charge period
-        0xDB, 0x40, // VCOMH deselect level
-        0xA4,       // Entire display ON resume
-        0xA6,       // Normal display (not inverted)
-        0xAF        // Display ON
+        0xAE, 0xD5, 0x80, 0xA8, 0x3F, 0xD3, 0x00, 0x40,
+        0x8D, 0x14, 0x20, 0x00, 0xA1, 0xC8, 0xDA, 0x12,
+        0x81, 0xCF, 0xD9, 0xF1, 0xDB, 0x40, 0xA4, 0xA6, 0xAF
     };
 
     for (size_t i = 0; i < sizeof(init_cmds); ++i) {
@@ -187,29 +174,25 @@ void ssd1306_draw_string(int col, int page, const char *text) {
         for (int i = 0; i < 5; ++i) {
             s_framebuffer[page * SSD1306_WIDTH + current_col + i] = font5x7[font_idx][i];
         }
-        // 1px space between characters
         s_framebuffer[page * SSD1306_WIDTH + current_col + 5] = 0x00;
         current_col += 6;
     }
 }
 
 void ssd1306_update(void) {
-    // Set column address: 0 to 127
     ssd1306_send_cmd(0x21);
     ssd1306_send_cmd(0);
     ssd1306_send_cmd(SSD1306_WIDTH - 1);
 
-    // Set page address: 0 to 7
     ssd1306_send_cmd(0x22);
     ssd1306_send_cmd(0);
     ssd1306_send_cmd(7);
 
-    // Write framebuffer in batches of 64 bytes
     for (int i = 0; i < SSD1306_BUFFER_SIZE; i += 64) {
         i2c_cmd_handle_t handle = i2c_cmd_link_create();
         i2c_master_start(handle);
         i2c_master_write_byte(handle, (SSD1306_I2C_ADDR << 1) | I2C_MASTER_WRITE, true);
-        i2c_master_write_byte(handle, 0x40, true); // Control byte: Data
+        i2c_master_write_byte(handle, 0x40, true);
         i2c_master_write(handle, &s_framebuffer[i], 64, true);
         i2c_master_stop(handle);
         i2c_master_cmd_begin(I2C_MASTER_NUM, handle, pdMS_TO_TICKS(100));
@@ -217,29 +200,69 @@ void ssd1306_update(void) {
     }
 }
 
+static void render_screen(DisplayMode mode, const struct SensorData *data) {
+    ssd1306_clear();
+    ssd1306_draw_string(24, 0, "ROOM MONITOR");
+
+    char valStr[32];
+    switch (mode) {
+        case DisplayMode::TEMPERATURE:
+            ssd1306_draw_string(28, 2, "Temperature");
+            snprintf(valStr, sizeof(valStr), "%.1f C", data->temperature);
+            ssd1306_draw_string(36, 5, valStr);
+            break;
+        case DisplayMode::HUMIDITY:
+            ssd1306_draw_string(36, 2, "Humidity");
+            snprintf(valStr, sizeof(valStr), "%.1f %%", data->humidity);
+            ssd1306_draw_string(36, 5, valStr);
+            break;
+        case DisplayMode::LIGHT:
+            ssd1306_draw_string(24, 2, "Ambient Light");
+            snprintf(valStr, sizeof(valStr), "%d %%", data->lightLevel);
+            ssd1306_draw_string(44, 5, valStr);
+            break;
+        case DisplayMode::MOTION:
+            ssd1306_draw_string(40, 2, "Motion");
+            snprintf(valStr, sizeof(valStr), "%s", data->motionDetected ? "DETECTED" : "NONE");
+            ssd1306_draw_string(36, 5, valStr);
+            break;
+    }
+    ssd1306_update();
+}
+
 void DisplayTask(void *pvParameters) {
     (void)pvParameters;
     ssd1306_init();
 
-    struct SensorData receivedData = {25.4f, 61.2f, 50, false};
+    DisplayMode currentMode = DisplayMode::TEMPERATURE;
+    struct SensorData currentData = {25.4f, 61.2f, 50, false};
+
+    render_screen(currentMode, &currentData);
 
     for (;;) {
-        // Block until new sensor data arrives
-        if (sensorQueue != NULL && xQueueReceive(sensorQueue, &receivedData, portMAX_DELAY) == pdPASS) {
-            ssd1306_clear();
+        bool needs_render = false;
 
-            // Section 27: Initial OLED Output
-            // Line 0: "ROOM MONITOR"
-            // Line 2: "Temperature"
-            // Line 4: "25.4 C"
-            char tempStr[20];
-            snprintf(tempStr, sizeof(tempStr), "%.1f C", receivedData.temperature);
+        // Check for navigation input
+        NavigationEvent navEvent;
+        if (navQueue != NULL && xQueueReceive(navQueue, &navEvent, 0) == pdPASS) {
+            if (navEvent == NavigationEvent::NEXT) {
+                currentMode = nextDisplayMode(currentMode);
+                needs_render = true;
+            } else if (navEvent == NavigationEvent::PREVIOUS) {
+                currentMode = previousDisplayMode(currentMode);
+                needs_render = true;
+            }
+        }
 
-            ssd1306_draw_string(24, 0, "ROOM MONITOR");
-            ssd1306_draw_string(28, 2, "Temperature");
-            ssd1306_draw_string(40, 5, tempStr);
+        // Check for updated sensor data (block up to 100ms so display remains responsive to inputs)
+        struct SensorData newData;
+        if (sensorQueue != NULL && xQueueReceive(sensorQueue, &newData, pdMS_TO_TICKS(100)) == pdPASS) {
+            currentData = newData;
+            needs_render = true;
+        }
 
-            ssd1306_update();
+        if (needs_render) {
+            render_screen(currentMode, &currentData);
         }
     }
 }
