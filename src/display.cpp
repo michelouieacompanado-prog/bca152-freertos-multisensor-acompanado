@@ -262,7 +262,11 @@ void DisplayTask(void *pvParameters) {
         }
 
         if (needs_render) {
-            render_screen(currentMode, &currentData);
+            // Section 34: Reduce unnecessary display operations when INACTIVE
+            EventBits_t bits = systemEventGroup != NULL ? xEventGroupGetBits(systemEventGroup) : EVENT_ACTIVE;
+            if (bits & EVENT_ACTIVE) {
+                render_screen(currentMode, &currentData);
+            }
         }
     }
 }

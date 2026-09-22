@@ -6,6 +6,7 @@
 #include "input.h"
 #include "alarm.h"
 #include "motion.h"
+#include "system_state.h"
 #include "rtos_objects.h"
 
 extern "C" void app_main(void) {
@@ -24,6 +25,8 @@ extern "C" void app_main(void) {
         xTaskCreate(SensorTask, "SensorTask", 3072, NULL, 2, NULL);
         // AlarmTask (Priority 2)
         xTaskCreate(AlarmTask, "AlarmTask", 2048, NULL, 2, NULL);
+        // StateTask (Priority 2 - Section 7 recommended)
+        xTaskCreate(StateTask, "StateTask", 2048, NULL, 2, NULL);
         // DisplayTask (Priority 1)
         xTaskCreate(DisplayTask, "DisplayTask", 4096, NULL, 1, NULL);
     } else {
