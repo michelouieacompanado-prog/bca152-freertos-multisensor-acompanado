@@ -5,7 +5,8 @@
   "parts": [
     { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
     { "type": "wokwi-dht22", "id": "dht1", "top": 0, "left": 150, "attrs": {} },
-    { "type": "wokwi-photoresistor-sensor", "id": "ldr1", "top": 100, "left": 150, "attrs": {} }
+    { "type": "wokwi-photoresistor-sensor", "id": "ldr1", "top": 100, "left": 150, "attrs": {} },
+    { "type": "wokwi-ssd1306", "id": "oled1", "top": 200, "left": 150, "attrs": {} }
   ],
   "connections": [
     [ "esp:TX", "$serialMonitor:RX", "", [] ],
@@ -15,7 +16,11 @@
     [ "esp:GND", "dht1:GND", "", [] ],
     [ "esp:34", "ldr1:AO", "", [] ],
     [ "esp:3V3", "ldr1:VCC", "", [] ],
-    [ "esp:GND", "ldr1:GND", "", [] ]
+    [ "esp:GND", "ldr1:GND", "", [] ],
+    [ "esp:21", "oled1:SDA", "", [] ],
+    [ "esp:22", "oled1:SCL", "", [] ],
+    [ "esp:3V3", "oled1:VCC", "", [] ],
+    [ "esp:GND", "oled1:GND", "", [] ]
   ],
   "dependencies": {}
 }
