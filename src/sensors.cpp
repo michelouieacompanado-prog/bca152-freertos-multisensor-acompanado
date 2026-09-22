@@ -40,15 +40,14 @@ int read_ldr_percentage(void) {
     return (raw * 100) / 4095;
 }
 
-static int wait_for_level(gpio_num_t pin, int level, uint32_t timeout_us) {
-    int count = 0;
+static bool wait_for_level(gpio_num_t pin, int level, uint32_t timeout_us) {
+    int64_t start = esp_timer_get_time();
     while (gpio_get_level(pin) != level) {
-        if (count++ > (int)timeout_us) {
-            return -1;
+        if ((uint32_t)(esp_timer_get_time() - start) > timeout_us) {
+            return false;
         }
-        esp_rom_delay_us(1);
     }
-    return count;
+    return true;
 }
 
 bool read_dht22(float *temperature, float *humidity) {
@@ -64,23 +63,23 @@ bool read_dht22(float *temperature, float *humidity) {
     gpio_set_direction(DHT22_PIN, GPIO_MODE_INPUT);
 
     // Await DHT22 response: 80us low, then 80us high
-    if (wait_for_level(DHT22_PIN, 0, 100) < 0) return false;
-    if (wait_for_level(DHT22_PIN, 1, 100) < 0) return false;
-    if (wait_for_level(DHT22_PIN, 0, 100) < 0) return false;
+    if (!wait_for_level(DHT22_PIN, 0, 100)) return false;
+    if (!wait_for_level(DHT22_PIN, 1, 100)) return false;
+    if (!wait_for_level(DHT22_PIN, 0, 100)) return false;
 
     // Read 40 bits (5 bytes)
     for (int i = 0; i < 40; ++i) {
         // Wait for pin to go high
-        if (wait_for_level(DHT22_PIN, 1, 100) < 0) return false;
+        if (!wait_for_level(DHT22_PIN, 1, 100)) return false;
 
-        // Measure high duration
-        int duration = 0;
+        // Measure high duration using microsecond clock
+        int64_t start = esp_timer_get_time();
         while (gpio_get_level(DHT22_PIN) == 1) {
-            if (++duration > 120) {
+            if ((uint32_t)(esp_timer_get_time() - start) > 120) {
                 return false;
             }
-            esp_rom_delay_us(1);
         }
+        uint32_t duration = (uint32_t)(esp_timer_get_time() - start);
 
         // Bit is 1 if pulse is > 40us, 0 if < 40us
         int byte_idx = i / 8;
@@ -88,6 +87,11 @@ bool read_dht22(float *temperature, float *humidity) {
         if (duration > 40) {
             data[byte_idx] |= 1;
         }
+    }
+
+    // Reject all-zero invalid reading
+    if (data[0] == 0 && data[1] == 0 && data[2] == 0 && data[3] == 0 && data[4] == 0) {
+        return false;
     }
 
     // Verify Checksum

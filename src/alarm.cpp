@@ -39,14 +39,15 @@ void AlarmTask(void *pvParameters) {
     init_buzzer();
 
     struct SensorData data;
+    bool is_alarm = false;
+    int toggle = 0;
 
     for (;;) {
-        // Block until new sensor data arrives for alarm evaluation (Section 59)
-        if (alarmQueue != NULL && xQueueReceive(alarmQueue, &data, portMAX_DELAY) == pdPASS) {
+        if (alarmQueue != NULL && xQueueReceive(alarmQueue, &data, pdMS_TO_TICKS(100)) == pdPASS) {
             AlarmState state = evaluateTemperature(data.temperature);
 
             if (state != AlarmState::NORMAL) {
-                set_buzzer_state(true);
+                is_alarm = true;
 
                 if (systemEventGroup != NULL) {
                     xEventGroupSetBits(systemEventGroup, EVENT_ALARM);
@@ -59,12 +60,18 @@ void AlarmTask(void *pvParameters) {
                     xSemaphoreGive(serialMutex);
                 }
             } else {
+                is_alarm = false;
                 set_buzzer_state(false);
 
                 if (systemEventGroup != NULL) {
                     xEventGroupClearBits(systemEventGroup, EVENT_ALARM);
                 }
             }
+        }
+
+        if (is_alarm) {
+            toggle = !toggle;
+            gpio_set_level(BUZZER_PIN, toggle);
         }
     }
 }
