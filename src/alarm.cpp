@@ -4,6 +4,7 @@
 #include "freertos/queue.h"
 #include "freertos/event_groups.h"
 #include "driver/gpio.h"
+#include "esp_rom_sys.h"
 
 #include "alarm.h"
 #include "sensors.h"
@@ -40,10 +41,9 @@ void AlarmTask(void *pvParameters) {
 
     struct SensorData data;
     bool is_alarm = false;
-    int toggle = 0;
 
     for (;;) {
-        if (alarmQueue != NULL && xQueueReceive(alarmQueue, &data, pdMS_TO_TICKS(100)) == pdPASS) {
+        if (alarmQueue != NULL && xQueueReceive(alarmQueue, &data, pdMS_TO_TICKS(50)) == pdPASS) {
             AlarmState state = evaluateTemperature(data.temperature);
 
             if (state != AlarmState::NORMAL) {
@@ -70,8 +70,14 @@ void AlarmTask(void *pvParameters) {
         }
 
         if (is_alarm) {
-            toggle = !toggle;
-            gpio_set_level(BUZZER_PIN, toggle);
+            // Generate 1 kHz tone burst (50ms duration) for loud speaker audio in Wokwi WebAudio
+            for (int i = 0; i < 50; i++) {
+                gpio_set_level(BUZZER_PIN, 1);
+                esp_rom_delay_us(500);
+                gpio_set_level(BUZZER_PIN, 0);
+                esp_rom_delay_us(500);
+            }
+            vTaskDelay(pdMS_TO_TICKS(50));
         }
     }
 }
