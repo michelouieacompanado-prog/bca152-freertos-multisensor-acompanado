@@ -4,7 +4,10 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 #include "driver/gpio.h"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcpp"
 #include "driver/adc.h"
+#pragma GCC diagnostic pop
 #include "esp_timer.h"
 #include "esp_rom_sys.h"
 
