@@ -3,34 +3,39 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 #include "sensors.h"
+#include "rtos_objects.h"
 
-// The Consumer Task
+// Phase 1 verification consumer task
 void ProcessingTask(void *pvParameters) {
-    QueueHandle_t sensorQueue = (QueueHandle_t)pvParameters;
-    SensorData_t receivedData;
+    (void)pvParameters;
+    struct SensorData receivedData;
 
     for (;;) {
-        // Block indefinitely (portMAX_DELAY) until data is available in the queue
         if (xQueueReceive(sensorQueue, &receivedData, portMAX_DELAY) == pdPASS) {
-            printf("Queue Received -> Temp: %.2f C | Hum: %.2f %% | Light: %d %%\n", 
-                   receivedData.temperature, 
-                   receivedData.humidity, 
+            if (serialMutex != NULL) {
+                xSemaphoreTake(serialMutex, portMAX_DELAY);
+            }
+            printf("Queue Received -> Temp: %.2f C | Hum: %.2f %% | Light: %d %%\n",
+                   receivedData.temperature,
+                   receivedData.humidity,
                    receivedData.lightLevel);
+            if (serialMutex != NULL) {
+                xSemaphoreGive(serialMutex);
+            }
         }
     }
 }
 
-extern "C" void app_main() {
+extern "C" void app_main(void) {
     printf("BCA152 FreeRTOS Multisensor\n");
     printf("System starting...\n");
 
-    // Create a queue capable of holding 5 SensorData_t items
-    QueueHandle_t sensorQueue = xQueueCreate(5, sizeof(SensorData_t));
+    // Initialize FreeRTOS synchronization and IPC objects
+    init_rtos_objects();
 
     if (sensorQueue != NULL) {
-        // Pass the queue handle to both tasks via the 4th parameter
-        xTaskCreate(SensorTask, "SensorTask", 2048, (void *)sensorQueue, 2, NULL);
-        xTaskCreate(ProcessingTask, "ProcessingTask", 2048, (void *)sensorQueue, 1, NULL);
+        xTaskCreate(SensorTask, "SensorTask", 2048, NULL, 2, NULL);
+        xTaskCreate(ProcessingTask, "ProcessingTask", 2048, NULL, 1, NULL);
     } else {
         printf("System Error: Failed to create sensor queue!\n");
     }
