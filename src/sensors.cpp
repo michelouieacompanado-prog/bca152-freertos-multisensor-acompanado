@@ -141,6 +141,9 @@ void SensorTask(void *pvParameters) {
         if (sensorQueue != NULL) {
             xQueueSend(sensorQueue, &currentData, 0);
         }
+        if (alarmQueue != NULL) {
+            xQueueSend(alarmQueue, &currentData, 0);
+        }
 
         // Section 22: Mandatory periodic execution using vTaskDelayUntil
         vTaskDelayUntil(&lastWakeTime, pdMS_TO_TICKS(2000));

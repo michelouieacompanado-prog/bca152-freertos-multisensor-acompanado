@@ -17,6 +17,7 @@ extern "C" {
 
 // FreeRTOS Queues
 extern QueueHandle_t sensorQueue;
+extern QueueHandle_t alarmQueue;
 extern QueueHandle_t navQueue;
 
 // FreeRTOS Mutex for shared Serial/UART (Section 36)
