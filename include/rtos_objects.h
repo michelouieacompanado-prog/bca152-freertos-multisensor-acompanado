@@ -10,7 +10,29 @@
 extern "C" {
 #endif
 
-// Event Group bit definitions (Section 35)
+/**
+ * ============================================================================
+ * FreeRTOS Event Group Specifications (Section 35)
+ * ============================================================================
+ * 
+ * Bit: EVENT_ACTIVE (BIT0)
+ *   Producer: StateTask (src/system_state.cpp)
+ *   Consumer: DisplayTask (src/display.cpp), AlarmTask (src/alarm.cpp)
+ *   Set when: System initializes or motion activity transitions system to ACTIVE state.
+ *   Cleared when: Inactivity timeout (15 seconds without PIR motion) expires.
+ * 
+ * Bit: EVENT_MOTION (BIT1)
+ *   Producer: MotionTask (src/motion.cpp)
+ *   Consumer: StateTask (src/system_state.cpp), SensorTask (src/sensors.cpp)
+ *   Set when: PIR sensor detects physical motion (GPIO 27 goes HIGH).
+ *   Cleared when: PIR sensor output returns to LOW (no motion detected).
+ * 
+ * Bit: EVENT_ALARM (BIT2)
+ *   Producer: AlarmTask (src/alarm.cpp)
+ *   Consumer: DisplayTask (src/display.cpp)
+ *   Set when: Temperature reading violates threshold (< 18.0 °C or > 30.0 °C).
+ *   Cleared when: Temperature returns to normal operating range [18.0 °C, 30.0 °C].
+ */
 #define EVENT_ACTIVE BIT0
 #define EVENT_MOTION BIT1
 #define EVENT_ALARM  BIT2

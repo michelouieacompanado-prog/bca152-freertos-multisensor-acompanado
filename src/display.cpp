@@ -202,7 +202,13 @@ void ssd1306_update(void) {
 
 static void render_screen(DisplayMode mode, const struct SensorData *data) {
     ssd1306_clear();
-    ssd1306_draw_string(24, 0, "ROOM MONITOR");
+
+    EventBits_t bits = systemEventGroup != NULL ? xEventGroupGetBits(systemEventGroup) : 0;
+    if (bits & EVENT_ALARM) {
+        ssd1306_draw_string(8, 0, "ROOM MONITOR [ALARM]");
+    } else {
+        ssd1306_draw_string(24, 0, "ROOM MONITOR");
+    }
 
     char valStr[32];
     switch (mode) {
