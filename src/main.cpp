@@ -1,22 +1,22 @@
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/queue.h"
+#include "sensors.h"
 
-// Task A function
-void taskA(void *pvParameters) {
-    for (;;) {
-        printf("Task A running\n");
-        // Block for 1000 milliseconds
-        vTaskDelay(pdMS_TO_TICKS(1000));
-    }
-}
+// The Consumer Task
+void ProcessingTask(void *pvParameters) {
+    QueueHandle_t sensorQueue = (QueueHandle_t)pvParameters;
+    SensorData_t receivedData;
 
-// Task B function
-void taskB(void *pvParameters) {
     for (;;) {
-        printf("Task B running\n");
-        // Block for 1500 milliseconds
-        vTaskDelay(pdMS_TO_TICKS(1500));
+        // Block indefinitely (portMAX_DELAY) until data is available in the queue
+        if (xQueueReceive(sensorQueue, &receivedData, portMAX_DELAY) == pdPASS) {
+            printf("Queue Received -> Temp: %.2f C | Hum: %.2f %% | Light: %d %%\n", 
+                   receivedData.temperature, 
+                   receivedData.humidity, 
+                   receivedData.lightLevel);
+        }
     }
 }
 
@@ -24,8 +24,14 @@ extern "C" void app_main() {
     printf("BCA152 FreeRTOS Multisensor\n");
     printf("System starting...\n");
 
-    // Instantiate the tasks
-    // xTaskCreate(TaskFunction, "TaskName", StackSize, Parameters, Priority, TaskHandle)
-    xTaskCreate(taskA, "Task A", 2048, NULL, 1, NULL);
-    xTaskCreate(taskB, "Task B", 2048, NULL, 1, NULL);
+    // Create a queue capable of holding 5 SensorData_t items
+    QueueHandle_t sensorQueue = xQueueCreate(5, sizeof(SensorData_t));
+
+    if (sensorQueue != NULL) {
+        // Pass the queue handle to both tasks via the 4th parameter
+        xTaskCreate(SensorTask, "SensorTask", 2048, (void *)sensorQueue, 2, NULL);
+        xTaskCreate(ProcessingTask, "ProcessingTask", 2048, (void *)sensorQueue, 1, NULL);
+    } else {
+        printf("System Error: Failed to create sensor queue!\n");
+    }
 }
