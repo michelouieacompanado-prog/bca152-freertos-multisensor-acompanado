@@ -38,7 +38,11 @@ void test_temperature_above_upper_threshold(void) {
     TEST_ASSERT_TRUE(evaluateTemperature(60.0f) == AlarmState::HIGH_TEMPERATURE);
 }
 
+#if defined(NATIVE) || !defined(ESP_PLATFORM)
+int main(void) {
+#else
 extern "C" void app_main(void) {
+#endif
     UNITY_BEGIN();
     RUN_TEST(test_temperature_below_lower_threshold);
     RUN_TEST(test_temperature_exactly_lower_threshold);
@@ -46,4 +50,7 @@ extern "C" void app_main(void) {
     RUN_TEST(test_temperature_exactly_upper_threshold);
     RUN_TEST(test_temperature_above_upper_threshold);
     UNITY_END();
+#if defined(NATIVE) || !defined(ESP_PLATFORM)
+    return 0;
+#endif
 }

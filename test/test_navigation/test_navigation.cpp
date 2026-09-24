@@ -31,11 +31,18 @@ void test_navigation_reverse_wraparound(void) {
     TEST_ASSERT_TRUE(previousDisplayMode(DisplayMode::TEMPERATURE) == DisplayMode::MOTION);
 }
 
+#if defined(NATIVE) || !defined(ESP_PLATFORM)
+int main(void) {
+#else
 extern "C" void app_main(void) {
+#endif
     UNITY_BEGIN();
     RUN_TEST(test_navigation_forward_transitions);
     RUN_TEST(test_navigation_forward_wraparound);
     RUN_TEST(test_navigation_reverse_transitions);
     RUN_TEST(test_navigation_reverse_wraparound);
     UNITY_END();
+#if defined(NATIVE) || !defined(ESP_PLATFORM)
+    return 0;
+#endif
 }

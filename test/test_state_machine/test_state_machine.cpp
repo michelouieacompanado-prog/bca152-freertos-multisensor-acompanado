@@ -34,11 +34,18 @@ void test_state_inactive_motion(void) {
     TEST_ASSERT_TRUE(result == SystemState::ACTIVE);
 }
 
+#if defined(NATIVE) || !defined(ESP_PLATFORM)
+int main(void) {
+#else
 extern "C" void app_main(void) {
+#endif
     UNITY_BEGIN();
     RUN_TEST(test_state_active_no_timeout);
     RUN_TEST(test_state_active_timeout);
     RUN_TEST(test_state_inactive_no_motion);
     RUN_TEST(test_state_inactive_motion);
     UNITY_END();
+#if defined(NATIVE) || !defined(ESP_PLATFORM)
+    return 0;
+#endif
 }
