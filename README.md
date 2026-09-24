@@ -22,7 +22,7 @@ All application logic is implemented without Arduino abstractions, relying stric
 - **Precise Periodic Sensor Sampling:** `SensorTask` utilizes `vTaskDelayUntil()` to eliminate timing drift while sampling DHT22 and LDR.
 - **Interactive Rotary Encoder Navigation:** `InputTask` processes quadrature pulses to cycle display pages (`TEMPERATURE` -> `HUMIDITY` -> `LIGHT` -> `MOTION` -> `TEMPERATURE`).
 - **OLED Display Subsystem:** Native ESP-IDF I2C driver driving a 128x64 SSD1306 display owned exclusively by `DisplayTask`.
-- **Safety-Critical Temperature Alarm:** `AlarmTask` continuously evaluates temperature against safety limits ($18.0\,^\circ\text{C}$ to $30.0\,^\circ\text{C}$) and controls a hardware buzzer.
+- **Safety-Critical Temperature Alarm:** `AlarmTask` continuously evaluates temperature against safety limits (18.0 °C to 30.0 °C) and controls a hardware buzzer.
 - **Power-Saving State Machine:** `StateTask` manages a 15-second inactivity timeout, switching between `ACTIVE` (full rendering) and `INACTIVE` (OLED powered down, reduced I2C bus traffic).
 - **Thread-Safe IPC & Synchronization:** Shared UART output protected by binary mutex (`serialMutex`), multi-task event signaling managed by FreeRTOS Event Group (`systemEventGroup`).
 - **Automated Unit Testing & Static Analysis:** 13 hardware-independent unit tests using Unity and zero-warning static analysis.
@@ -127,8 +127,8 @@ flowchart TD
 | Component | Wokwi Model Type | ESP32 Connection | Functional Purpose |
 | :--- | :--- | :--- | :--- |
 | **ESP32** | `board-esp32-devkit-c-v4` | Main Microcontroller | Executes ESP-IDF firmware & FreeRTOS tasks |
-| **DHT22** | `wokwi-dht22` | GPIO 4 | Measures ambient temperature ($^\circ\text{C}$) and relative humidity ($\%$) |
-| **Photoresistor** | `wokwi-photoresistor-sensor` | GPIO 34 (ADC1_CH6) | Measures ambient light intensity ($0\text{--}100\%$) |
+| **DHT22** | `wokwi-dht22` | GPIO 4 | Measures ambient temperature (°C) and relative humidity (%) |
+| **Photoresistor** | `wokwi-photoresistor-sensor` | GPIO 34 (ADC1_CH6) | Measures ambient light intensity (0-100%) |
 | **Rotary Encoder** | `wokwi-ky-040` | CLK: GPIO 18, DT: GPIO 19, SW: GPIO 5 | User page navigation input |
 | **PIR Sensor** | `wokwi-pir-motion-sensor` | GPIO 27 | Motion detection for system activation |
 | **SSD1306 OLED** | `wokwi-ssd1306` | SDA: GPIO 21, SCL: GPIO 22 | Displays active measurement page & alarm banner |
@@ -144,11 +144,11 @@ flowchart TD
 | **GPIO 18** | Encoder CLK | Input | Internal Pull-Up enabled |
 | **GPIO 19** | Encoder DT | Input | Internal Pull-Up enabled |
 | **GPIO 5** | Encoder Pushbutton (SW) | Input | Internal Pull-Up enabled |
-| **GPIO 21** | I2C0 SDA (OLED) | Open-Drain Output | $400\,\text{kHz}$ I2C Master speed |
-| **GPIO 22** | I2C0 SCL (OLED) | Open-Drain Output | $400\,\text{kHz}$ I2C Master speed |
+| **GPIO 21** | I2C0 SDA (OLED) | Open-Drain Output | 400 kHz I2C Master speed |
+| **GPIO 22** | I2C0 SCL (OLED) | Open-Drain Output | 400 kHz I2C Master speed |
 | **GPIO 25** | Alarm Buzzer | Output | High = Sound ON, Low = Sound OFF |
 | **GPIO 27** | PIR Motion Output | Input | Internal Pull-Down enabled |
-| **GPIO 34** | LDR Analog Input | Analog Input | ADC1 Channel 6, 12-bit width ($0\text{--}4095$) |
+| **GPIO 34** | LDR Analog Input | Analog Input | ADC1 Channel 6, 12-bit width (0-4095) |
 
 ---
 
@@ -173,7 +173,7 @@ flowchart TD
 4. **`systemEventGroup` (`EventGroupHandle_t`):** Bitmask for real-time system events:
    - `EVENT_ACTIVE (BIT0)`: High when system is ACTIVE; cleared on 15s inactivity timeout.
    - `EVENT_MOTION (BIT1)`: High during active PIR motion detection.
-   - `EVENT_ALARM (BIT2)`: High when temperature violates bounds ($< 18.0\,^\circ\text{C}$ or $> 30.0\,^\circ\text{C}$).
+   - `EVENT_ALARM (BIT2)`: High when temperature violates bounds (< 18.0 °C or > 30.0 °C).
 5. **`serialMutex` (`SemaphoreHandle_t`):** Binary mutex ensuring exclusive access to UART serial printing.
 
 ---
@@ -294,21 +294,21 @@ pio test
 ### Verified Test Cases (13 Total)
 
 - **Alarm Logic Tests (`test/test_alarm/test_alarm.cpp`):**
-  1. `test_temperature_below_lower_threshold` ($< 18.0\,^\circ\text{C} \rightarrow \text{LOW\_TEMPERATURE}$)
-  2. `test_temperature_exactly_lower_threshold` ($= 18.0\,^\circ\text{C} \rightarrow \text{NORMAL}$)
-  3. `test_temperature_normal_value` ($25.4\,^\circ\text{C} \rightarrow \text{NORMAL}$)
-  4. `test_temperature_exactly_upper_threshold` ($= 30.0\,^\circ\text{C} \rightarrow \text{NORMAL}$)
-  5. `test_temperature_above_upper_threshold` ($> 30.0\,^\circ\text{C} \rightarrow \text{HIGH\_TEMPERATURE}$)
+  1. `test_temperature_below_lower_threshold` (`< 18.0 °C` → `LOW_TEMPERATURE`)
+  2. `test_temperature_exactly_lower_threshold` (`= 18.0 °C` → `NORMAL`)
+  3. `test_temperature_normal_value` (`25.4 °C` → `NORMAL`)
+  4. `test_temperature_exactly_upper_threshold` (`= 30.0 °C` → `NORMAL`)
+  5. `test_temperature_above_upper_threshold` (`> 30.0 °C` → `HIGH_TEMPERATURE`)
 - **Navigation Tests (`test/test_navigation/test_navigation.cpp`):**
-  1. `test_navigation_forward_transitions` (`TEMP` -> `HUM` -> `LIGHT` -> `MOTION`)
-  2. `test_navigation_forward_wraparound` (`MOTION` -> `TEMP`)
-  3. `test_navigation_reverse_transitions` (`MOTION` -> `LIGHT` -> `HUM` -> `TEMP`)
-  4. `test_navigation_reverse_wraparound` (`TEMP` -> `MOTION`)
+  1. `test_navigation_forward_transitions` (`TEMP` → `HUM` → `LIGHT` → `MOTION`)
+  2. `test_navigation_forward_wraparound` (`MOTION` → `TEMP`)
+  3. `test_navigation_reverse_transitions` (`MOTION` → `LIGHT` → `HUM` → `TEMP`)
+  4. `test_navigation_reverse_wraparound` (`TEMP` → `MOTION`)
 - **State Machine Tests (`test/test_state_machine/test_state_machine.cpp`):**
-  1. `test_state_active_no_timeout` (`ACTIVE` $+ <15\text{s} \rightarrow \text{ACTIVE}$)
-  2. `test_state_active_timeout` (`ACTIVE` $+ \ge 15\text{s} \rightarrow \text{INACTIVE}$)
-  3. `test_state_inactive_no_motion` (`INACTIVE` $+$ no motion $\rightarrow \text{INACTIVE}$)
-  4. `test_state_inactive_motion` (`INACTIVE` $+$ motion $\rightarrow \text{ACTIVE}$)
+  1. `test_state_active_no_timeout` (`ACTIVE` + `<15s` → `ACTIVE`)
+  2. `test_state_active_timeout` (`ACTIVE` + `≥15s` → `INACTIVE`)
+  3. `test_state_inactive_no_motion` (`INACTIVE` + `no motion` → `INACTIVE`)
+  4. `test_state_inactive_motion` (`INACTIVE` + `motion` → `ACTIVE`)
 
 ---
 
