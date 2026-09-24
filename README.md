@@ -44,6 +44,10 @@ All application logic is implemented without Arduino abstractions, relying stric
 
 ## System Architecture
 
+### Wokwi Simulation Circuit Diagram
+
+![Wokwi Simulation Circuit Diagram](docs/wokwi-circuit-diagram.png)
+
 The hardware topology interfaces the ESP32 with environmental sensors and user peripherals:
 
 ```mermaid
@@ -235,7 +239,8 @@ bca152-freertos-multisensor-acompanado/
 │       └── test_state_machine.cpp
 └── docs/
     ├── laboratory-report.md
-    └── wokwi_verification.md
+    ├── wokwi_verification.md
+    └── wokwi-circuit-diagram.png
 ```
 
 ---
