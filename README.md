@@ -1,4 +1,4 @@
-# Real-Time Multisensor Room Monitoring System (FreeRTOS & ESP-IDF)
+<img width="1258" height="666" alt="wokwi circuit" src="https://github.com/user-attachments/assets/b4eb9349-0dcb-4ab3-b897-30d7c44c93c5" /># Real-Time Multisensor Room Monitoring System (FreeRTOS & ESP-IDF)
 
 [![Build & Verification Status](https://img.shields.io/badge/PlatformIO-ESP--IDF-blue.svg)](https://platformio.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -46,7 +46,7 @@ All application logic is implemented without Arduino abstractions, relying stric
 
 ### Wokwi Simulation Circuit Diagram
 
-![Wokwi Simulation Circuit Diagram](docs/wokwi-circuit-diagram.png)
+![Wokwi Simulation Circuit Diagram](<img width="1258" height="666" alt="wokwi circuit" src="https://github.com/user-attachments/assets/70ab2821-c8ec-4558-8aec-1cdbd5fc1d94" />)
 
 The hardware topology interfaces the ESP32 with environmental sensors and user peripherals:
 
