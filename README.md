@@ -240,7 +240,10 @@ bca152-freertos-multisensor-acompanado/
 └── docs/
     ├── laboratory-report.md
     ├── wokwi_verification.md
-    └── wokwi-circuit-diagram.png
+    ├── wokwi-circuit-diagram.png
+    ├── screenshot-normal-operation.png
+    ├── screenshot-alarm-active.png
+    └── screenshot-motion-detected.png
 ```
 
 ---
@@ -324,6 +327,31 @@ All source code compiles cleanly under ESP-IDF 5.2.1 strict warning checks.
 ## Functional Verification
 
 All 10 required functional test cases (FT-01 to FT-10) have been empirically verified in Wokwi. Detailed records are documented in [docs/wokwi_verification.md](docs/wokwi_verification.md).
+
+---
+
+## System Demo Screenshots
+
+The following screenshots were captured from the Wokwi simulation running the compiled ESP-IDF firmware.
+
+### 1. Normal Operation — Temperature Display (24.0 °C)
+> System starts in `ACTIVE` state. OLED shows `ROOM MONITOR` with live temperature reading. Serial monitor confirms periodic sensor sampling.
+
+![Normal Operation](docs/screenshot-normal-operation.png)
+
+---
+
+### 2. Alarm State — Temperature Out of Range (41.6 °C HIGH)
+> DHT22 temperature raised above 30.0 °C threshold. OLED banner changes to `ROOM MONITOR [ALARM]`. AlarmTask activates buzzer (GPIO 25) and logs `[ALARM] WARNING` to Serial Monitor.
+
+![Alarm Active](docs/screenshot-alarm-active.png)
+
+---
+
+### 3. Motion Detection — System Restored to ACTIVE
+> PIR sensor triggered HIGH via Wokwi "Simulate motion" control. MotionTask sets `EVENT_MOTION` bit. StateTask restores system to `ACTIVE` state and re-enables OLED rendering.
+
+![Motion Detected](docs/screenshot-motion-detected.png)
 
 ---
 
