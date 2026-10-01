@@ -186,3 +186,15 @@ Removing `serialMutex` protection resulted in garbled serial monitor output when
 ## 10. Conclusion
 
 The **Real-Time Multisensor Room Monitoring System** was successfully designed, implemented, verified, and documented strictly following native ESP-IDF and FreeRTOS standards. All 10 functional requirements, 13 unit tests, 3 fault experiments, and Section 52 milestone commits were completed with zero build errors and clean code quality.
+
+---
+
+## 11. AI Assistance and Tool Usage Acknowledgement
+
+In accordance with academic integrity and transparency principles, the author acknowledges the use of Artificial Intelligence (AI) tools during the development, debugging, and documentation of this laboratory activity:
+
+1. **Code Debugging & Error Resolution:** AI assistance was consulted to assist in diagnosing and fixing compile-time errors, addressing static code analysis warnings (such as sign-comparison and legacy driver deprecations in ESP-IDF v5), and troubleshooting FreeRTOS task scheduling anomalies.
+2. **Technical Problem Solving & Advisory:** AI tools were utilized for technical consultation and guidance when resolving complex edge cases, specifically regarding microsecond-level timing in bit-banged 1-Wire sensor protocols and inter-task queue buffer sizing.
+3. **Architectural Diagram Generation:** AI was employed to assist in designing and structuring visual diagrams, including the **System State Machine** (`stateDiagram-v2`), the **FreeRTOS Architecture & Task Data Flow** diagram (`flowchart TD`), and the hardware component topology diagram.
+
+All logic, implementations, and verification tests were independently reviewed, validated against native ESP-IDF documentation, and verified through automated unit testing and Wokwi simulation.
