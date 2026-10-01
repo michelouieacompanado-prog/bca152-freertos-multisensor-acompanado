@@ -42,13 +42,14 @@ All application logic is implemented without Arduino abstractions, relying stric
 
 ---
 
-## System Architecture
 
 ### Wokwi Simulation Circuit Diagram
+The hardware topology interfaces the ESP32 with environmental sensors and user peripherals:
 
 ![Wokwi Simulation Circuit Diagram](https://github.com/user-attachments/assets/70ab2821-c8ec-4558-8aec-1cdbd5fc1d94)
 
-The hardware topology interfaces the ESP32 with environmental sensors and user peripherals:
+
+## System Architecture
 
 
 ```mermaid
