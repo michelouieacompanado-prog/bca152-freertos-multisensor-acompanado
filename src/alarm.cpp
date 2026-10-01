@@ -39,7 +39,7 @@ void AlarmTask(void *pvParameters) {
     (void)pvParameters;
     init_buzzer();
 
-    struct SensorData data;
+    struct SensorData data = {};
     bool is_alarm = false;
 
     for (;;) {

@@ -2,6 +2,10 @@
 #include "input.h"
 #include "../../src/input.cpp"
 
+void setUp(void) {}
+void tearDown(void) {}
+
+
 // -----------------------------------------------------------------------------
 // Category: Display Navigation Logic (Section 43: 4 Required Tests)
 // Forward / reverse transitions and circular wraparound

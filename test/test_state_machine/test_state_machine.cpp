@@ -2,6 +2,10 @@
 #include "system_state.h"
 #include "../../src/system_state.cpp"
 
+void setUp(void) {}
+void tearDown(void) {}
+
+
 // -----------------------------------------------------------------------------
 // Category: System State Machine Logic (Section 43: 4 Required Tests)
 // Inactivity timeout (15000 ms) and motion-based wakeup evaluation

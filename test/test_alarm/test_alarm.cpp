@@ -2,6 +2,10 @@
 #include "alarm.h"
 #include "../../src/alarm.cpp"
 
+void setUp(void) {}
+void tearDown(void) {}
+
+
 // -----------------------------------------------------------------------------
 // Category: Temperature Alarm Logic (Section 43: 5 Required Tests)
 // Thresholds: LOW = 18.0 °C, HIGH = 30.0 °C

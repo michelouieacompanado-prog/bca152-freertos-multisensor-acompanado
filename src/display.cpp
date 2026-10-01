@@ -249,7 +249,7 @@ void DisplayTask(void *pvParameters) {
         bool needs_render = false;
 
         // Check for navigation input
-        NavigationEvent navEvent;
+        NavigationEvent navEvent = NavigationEvent::NONE;
         if (navQueue != NULL && xQueueReceive(navQueue, &navEvent, 0) == pdPASS) {
             if (navEvent == NavigationEvent::NEXT) {
                 currentMode = nextDisplayMode(currentMode);
@@ -261,7 +261,7 @@ void DisplayTask(void *pvParameters) {
         }
 
         // Check for updated sensor data (block up to 100ms so display remains responsive to inputs)
-        struct SensorData newData;
+        struct SensorData newData = {};
         if (sensorQueue != NULL && xQueueReceive(sensorQueue, &newData, pdMS_TO_TICKS(100)) == pdPASS) {
             currentData = newData;
             needs_render = true;
